@@ -1,7 +1,15 @@
 #pragma once
 
+#include <cstdint>
+
 namespace vm
 {
+
+#define OP_WIDE         -1
+#define OP_TABLESWITCH  -2
+#define OP_LOOKUPSWITCH -3
+
+int getnoperands(uint8_t instruction);
 
 /// @brief 
 enum class TypeCode {
@@ -14,29 +22,6 @@ enum class TypeCode {
 	INT           = 10,
 	LONG          = 11,
 	LAST
-};
-
-
-/// @brief 
-enum class ConstantTag {
-	CONSTANT_Untagged           = 0,
-	CONSTANT_Utf8               = 1,
-	CONSTANT_Integer            = 3,
-	CONSTANT_Float              = 4,
-	CONSTANT_Long               = 5,
-	CONSTANT_Double             = 6,
-	CONSTANT_Class              = 7,
-	CONSTANT_String             = 8,
-	CONSTANT_Fieldref           = 9,
-	CONSTANT_Methodref          = 10,
-	CONSTANT_InterfaceMethodref = 11,
-	CONSTANT_NameAndType        = 12,
-	CONSTANT_MethodHandle       = 15,
-	CONSTANT_MethodType         = 16,
-	CONSTANT_InvokeDynamic      = 18,
-	CONSTANT_Constant           = 20,       // used to tag integers, longs, doubles, floats and strings
-	CONSTANT_U1                 = 21,       // used to tag integers, floats and strings
-	CONSTANT_U2                 = 22        // used to tag longs and doubles
 };
 
 
@@ -73,57 +58,8 @@ enum class AccessFlags {
 };
 
 
-/// @brief 
-enum class AttributeTag {
-	UnknownAttribute,
-	ConstantValue,
-	Code,
-	Deprecated,
-	Exceptions,
-	InnerClasses,
-	SourceFile,
-	Synthetic,
-	LineNumberTable,
-	LocalVariableTable
-};
-
-
-/// @brief 
-enum class ReferenceKind {
-	none                = 0,
-	getField            = 1,
-	getStatic           = 2,
-	putField            = 3,
-	putStatic           = 4,
-	invokeVirtual       = 5,
-	invokeStatic        = 6,
-	invokeSpecial       = 7,
-	newInvokeSpecial    = 8,
-	invokeInterface     = 9,
-	last                = 10,
-};
-
-
-/// @brief 
-enum class FieldType {
-	BYTE       = 'B',
-	CHAR       = 'C',
-	DOUBLE     = 'D',
-	FLOAT      = 'F',
-	INT        = 'I',
-	LONG       = 'J',
-	REFERENCE  = 'L',
-	SHORT      = 'S',
-	VOID       = 'V',
-	BOOLEAN    = 'Z',
-	ARRAY      = '[',
-	TERMINAL   = ';',
-	SEPARATOR  = '/',
-};
-
-
 /// @brief bytecode of java lang
-enum class Instruction {
+enum Instruction {
 	/* constants */
 	NOP             = 0x00,
 	ACONST_NULL     = 0x01,
