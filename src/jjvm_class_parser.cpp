@@ -39,8 +39,11 @@ std::vector<std::shared_ptr<ConstantPoolBase>> read_constant_pools(std::basic_is
 		case ConstantTag::CONSTANT_Utf8: {
             auto&& info = std::make_shared<CONSTANT_Utf8_info>();
             info->length = read_reverse<uint16_t>(stream);
-            info->bytes = std::vector<char>(info->length + 1, 0);
-            stream.read(info->bytes.data(), info->length);
+			
+			std::vector<char> tmp(info->length + 1, 0);
+            stream.read(tmp.data(), info->length);
+
+			info->bytes = tmp.data();
             res[i] = info;
 			break;
         }
@@ -356,7 +359,7 @@ std::vector<std::shared_ptr<AttributeBase>> read_attributes(std::basic_istream<F
 		uint32_t length = read_reverse<uint32_t>(stream);
 
 		auto& utf8_info = std::static_pointer_cast<CONSTANT_Utf8_info>(cp[index]);
-		AttributeTag tag = getattributetag(utf8_info->bytes.data());
+		AttributeTag tag = getattributetag(utf8_info->bytes);
 		switch (tag) {
 		case AttributeTag::ConstantValue: {
 			auto attr = std::make_shared<ConstantValue_attribute>();
@@ -518,6 +521,7 @@ ClassFile ClassFile::create(const std::string &file_name) {
 	res.access_flags = read_reverse<uint16_t>(fb);
 	res.this_class = read_reverse<uint16_t>(fb);
 	res.super_class = read_reverse<uint16_t>(fb);
+    std::cout << "Super class: " << res.getClassName(res.super_class) << std::endl;
 
 	uint16_t interfaces_count = read_reverse<uint16_t>(fb);
 	res.interfaces = read_interfaces(fb, interfaces_count);

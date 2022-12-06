@@ -8,5 +8,8 @@ add_executable(${JJVM_EXEC}
                 main.cpp
                 src/memory.cpp
                 src/jjvm_class_parser.cpp
-                src/instractions.cpp)
+                src/instractions.cpp
+                src/jjvm.cpp
+                src/ClassFile.cpp
+                src/jjvm_handlers.cpp)
 target_include_directories(${JJVM_EXEC} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/)

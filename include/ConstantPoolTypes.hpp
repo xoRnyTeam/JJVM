@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 
 namespace vm
@@ -58,7 +59,7 @@ public:
 struct CONSTANT_Utf8_info : public ConstantPoolBase {
     CONSTANT_Utf8_info() : ConstantPoolBase(ConstantTag::CONSTANT_Utf8) {}
 	uint16_t      length;
-	std::vector<char> bytes;
+	std::string bytes;
 };
 
 struct CONSTANT_Integer_info : public ConstantPoolBase {
@@ -91,7 +92,7 @@ struct CONSTANT_Class_info : public ConstantPoolBase {
 struct CONSTANT_String_info : public ConstantPoolBase {
     CONSTANT_String_info() : ConstantPoolBase(ConstantTag::CONSTANT_String) {}
 	uint16_t      string_index;
-	std::vector<char>   string;
+	std::string   string;
 };
 
 struct CONSTANT_Fieldref_info : public ConstantPoolBase {
