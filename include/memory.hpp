@@ -35,10 +35,9 @@ public:
     std::shared_ptr<Code_attribute> code;
 
 public:
-    Frame(size_t max_locals, size_t max_stack) {
-        m_lockals.resize(max_locals);
-        m_maxStack = max_stack;
-    }
+    Frame(size_t max_locals, size_t max_stack);
+
+public:
     void stackPush(Value value);
     void stackPop();
     Value stackTop() const;
