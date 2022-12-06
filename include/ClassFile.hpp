@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <optional>
 
 #include <ConstantPoolTypes.hpp>
 #include <FieldTypes.hpp>
@@ -26,8 +27,33 @@ struct ClassFile final {
     std::vector<Method> methods;
 
     std::vector<std::shared_ptr<AttributeBase>> attributes;
-    
+
+    // FIXME mb conver to constructor    
     static ClassFile create(const std::string &file_name);
+
+public:
+    std::pair<Method, bool> getMethod(const std::string &name, const std::string &descriptor) const;
+    std::pair<Field, bool> getField(const std::string &name, const std::string &descriptor) const;
+
+    /// @brief check if super class is java.lang.Object
+    /// @note super class is not supported yet
+    bool isTopClass() const;
+
+    // constant pool interface
+    //=-----------------------
+    std::string getUTF8(uint16_t id) const;
+    std::string getClassName(uint16_t id) const;
+    std::string getString(uint16_t id) const;
+
+    int32_t getInteger(uint16_t id) const;
+    float getFloat(uint16_t id) const;
+    int64_t getLong(uint16_t id) const;
+    double getDouble(uint16_t id) const;
+
+    std::pair<std::string, std::string> getNameAndType(uint16_t id) const;
+
+private:
+
 }; // class ClassFile
 
 } // namespace vm
