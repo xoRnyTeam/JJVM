@@ -1,11 +1,10 @@
 
 #include <jjvm.hpp>
-#include <ClassFile.hpp>
 
+#include <iostream>
 
 int main() {
-
-    vm::ClassFile::create("./tests/HelloWorld.class");
+    vm::jjvm jjvm("HelloWorld.class", {"./tests/", "../tests/", "../../tests/"});
 
     return 0;
 }
