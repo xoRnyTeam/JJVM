@@ -32,6 +32,7 @@ class AttributeBase {
 
 public:
     AttributeBase(AttributeTag tag) : m_tag(tag) {}
+	virtual ~AttributeBase() = default;
     AttributeTag getTag() const { return m_tag; }
 };
 

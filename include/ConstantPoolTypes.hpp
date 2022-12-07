@@ -51,6 +51,7 @@ class ConstantPoolBase {
 public:
     ConstantPoolBase(ConstantTag tag) 
         : m_tag(tag) {}
+	virtual ~ConstantPoolBase() = default;
 
     ConstantTag getTag() const { return m_tag; };
 };

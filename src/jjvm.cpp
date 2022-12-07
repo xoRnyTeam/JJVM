@@ -75,7 +75,7 @@ void jjvm::methodCall(const std::string &name, const std::string &descriptor, in
             Value v = m_frames.top().stackTop();
             m_frames.top().stackPop();
 
-            methodFrame.lockalStore(localCounter++, v);
+            methodFrame.localStore(localCounter++, v);
             i += 1;
             switch(static_cast<Field::FieldType>(descriptor[i])) {
                 case Field::FieldType::REFERENCE:
@@ -98,7 +98,7 @@ void jjvm::methodCall(const std::string &name, const std::string &descriptor, in
                     break;
                 case Field::FieldType::DOUBLE:
                 case Field::FieldType::LONG:
-                    methodFrame.lockalStore(localCounter++, v);
+                    methodFrame.localStore(localCounter++, v);
                 default:
                     i++;
                     break;
@@ -113,6 +113,7 @@ void jjvm::methodCall(const std::string &name, const std::string &descriptor, in
     // loop over instractions
     //=----------------------
     auto&& code = codeAttr->code;
+    m_frames.top().code = codeAttr;
     size_t len = code.size();
     while(m_frames.top().pc < len) {
         // go to instraction handler

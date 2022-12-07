@@ -20,11 +20,11 @@ Value Frame::stackTop() const {
     return m_stack.top();
 }
 
-void Frame::lockalStore(uint16_t id, Value value) {
+void Frame::localStore(uint16_t id, Value value) {
     m_lockals.at(id) = value;
 }
 
-Value Frame::lockalLoad(uint16_t id) const {
+Value Frame::localLoad(uint16_t id) const {
     return m_lockals.at(id);
 }
 

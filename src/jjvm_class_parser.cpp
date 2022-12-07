@@ -63,16 +63,16 @@ std::vector<std::shared_ptr<ConstantPoolBase>> read_constant_pools(std::basic_is
             auto&& info = std::make_shared<CONSTANT_Long_info>();
             info->high_bytes = read_reverse<uint32_t>(stream);
             info->low_bytes = read_reverse<uint32_t>(stream);
-			i++;
             res[i] = info;
+			i++;
 			break;
         }
 		case ConstantTag::CONSTANT_Double: {
             auto&& info = std::make_shared<CONSTANT_Double_info>();
             info->high_bytes = read_reverse<uint32_t>(stream);
             info->low_bytes = read_reverse<uint32_t>(stream);
-			i++;
             res[i] = info;
+			i++;
 			break;
         }
 		case ConstantTag::CONSTANT_Class: {

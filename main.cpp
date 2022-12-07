@@ -4,9 +4,11 @@
 #include <iostream>
 
 int main() {
-    vm::jjvm jjvm("HelloWorld.class", {"./tests/", "../tests/", "../../tests/"});
+    vm::jjvm jjvm("Middle.class", {"./tests/", "../tests/", "../../tests/"});
 
     jjvm.execute();
+
+    std::cout << "END!" << std::endl;
     
     return 0;
 }

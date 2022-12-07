@@ -39,14 +39,14 @@ public:
     void store(size_t id, size_t place, const T& val) {
         auto&& heap = m_heap.at(id);
         // OMG
-        *reinterpret_cast<T*>(&heap.data[heap.member_size * place]) = val;
+        *reinterpret_cast<T*>(&heap.data.at(heap.member_size * place)) = val;
     }
 
     template<typename T>
     T load(size_t id, size_t place) const {
         auto&& heap = m_heap.at(id);
         // OMG 2
-        return *reinterpret_cast<T*>(const_cast<uint8_t*>(&heap.data[heap.member_size * place]));
+        return *reinterpret_cast<T*>(const_cast<uint8_t*>(&heap.data.at(heap.member_size * place)));
     }
 
 }; // class Heap
