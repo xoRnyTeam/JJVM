@@ -42,8 +42,8 @@ public:
     void stackPop();
     Value stackTop() const;
     
-    void lockalStore(uint16_t id, Value value);
-    Value lockalLoad(uint16_t id) const;
+    void localStore(uint16_t id, Value value);
+    Value localLoad(uint16_t id) const;
 
 
 }; // class Frame
