@@ -51,14 +51,14 @@ public:
 
 public:
     /// @brief init class
-    void callInit();
-
-    //void call
+    void execute();
 
 private:
     void methodCall(const std::string &name, const std::string &descriptor, int16_t flags);
 
     std::shared_ptr<AttributeBase> jjvm::getAttr(std::vector<std::shared_ptr<AttributeBase>> & attrs, AttributeTag tag) const;
+
+    Value resolveConstant(uint16_t id);
 
     // handlers
     //=--------

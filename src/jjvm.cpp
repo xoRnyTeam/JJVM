@@ -1,6 +1,7 @@
 #include <jjvm.hpp>
 
 #include <fstream>
+#include <iostream>
 
 namespace vm
 {
@@ -29,12 +30,19 @@ jjvm::jjvm(const std::string &class_name, const std::vector< std::string > &clas
     intiHandlers();
 }
 
-void jjvm::callInit() {
+void jjvm::execute() {
+    // init class file
+    //=---------------
     auto&& init_method = m_class.getMethod("<clinit>", "()V");
     if(init_method.second) {
         methodCall("<clinit>", "()V", ACC_STATIC | ACC_NONE);
     }
     // TODO: call 'init' for super class
+
+    // call main
+    //=---------
+    // TODO: place argv to frame
+    methodCall("main", "([Ljava/lang/String;)V", ACC_PUBLIC | ACC_STATIC);
 }
 
 void jjvm::methodCall(const std::string &name, const std::string &descriptor, int16_t flags) {
@@ -125,6 +133,30 @@ std::shared_ptr<AttributeBase> jjvm::getAttr(std::vector<std::shared_ptr<Attribu
         }
     }
     return res;
+}
+
+Value jjvm::resolveConstant(uint16_t id) {
+    Value v;
+	v.i = 0;
+	switch (m_class.cp[id]->getTag()) {
+	case ConstantTag::CONSTANT_Integer:
+		v.i = m_class.getInteger(id);
+		break;
+	case ConstantTag::CONSTANT_Float:
+		v.f = m_class.getFloat(id);
+		break;
+	case ConstantTag::CONSTANT_Long:
+		v.l = m_class.getLong(id);
+		break;
+	case ConstantTag::CONSTANT_Double:
+		v.d = m_class.getDouble(id);
+		break;
+	case ConstantTag::CONSTANT_String: {
+        // TODO immediately upload to heap when parsing
+        throw std::runtime_error("Don't implemented!");
+    }
+    }
+	return v;
 }
 
 } // namespace vm

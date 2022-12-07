@@ -1,4 +1,6 @@
 #include <ClassFile.hpp>
+#include <memory.hpp>
+
 #include <stdexcept>
 #include <vector>
 

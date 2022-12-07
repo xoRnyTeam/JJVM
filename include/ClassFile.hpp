@@ -3,7 +3,6 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <optional>
 
 #include <ConstantPoolTypes.hpp>
 #include <FieldTypes.hpp>
