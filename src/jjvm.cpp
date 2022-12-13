@@ -6,7 +6,7 @@
 namespace vm
 {
 
-jjvm::jjvm(const std::string &class_name, const std::vector< std::string > &class_path) {
+jjvm::jjvm(const std::string &class_name, const std::vector<std::string> &class_path) {
     std::ifstream fIn;
     std::string finded_name;
     for(const auto& path: class_path) {

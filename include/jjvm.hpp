@@ -47,7 +47,7 @@ public:
     /// @brief 
     /// @param class_name 
     /// @param class_path 
-    jjvm(const std::string &class_name, const std::vector< std::string > &class_path);
+    jjvm(const std::string &class_name, const std::vector<std::string> &class_path);
 
 public:
     /// @brief init class
