@@ -8,7 +8,7 @@ public class Middle {
                 sum += numbers[j];
             }
             average = sum / numbers.length;
-            //System.out.println(average);
+            System.out.println(average);
         }
 	}
 }

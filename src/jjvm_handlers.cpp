@@ -1119,6 +1119,8 @@ void jjvm::opireturn() {
     Value v = m_frames.top().stackTop();
     m_frames.top().stackPop();
 
+    std::cout << "Return: " << v.i << std::endl;
+
     Frame tmp = m_frames.top();
     m_frames.pop();
 
@@ -1163,6 +1165,80 @@ void jjvm::opnewarray() {
     v.heapID = h_id;
     m_frames.top().stackPush(v);
 }
+
+void jjvm::opinvokestatic() {
+    uint16_t i = m_frames.top().code->code[m_frames.top().pc++] << 8;
+    i |= m_frames.top().code->code[m_frames.top().pc++];
+
+    auto&& method_ref = std::static_pointer_cast<CONSTANT_Methodref_info>(m_class.cp[i]);
+    auto&& class_name = m_class.getClassName(method_ref->class_index);
+    auto&& method_str = m_class.getNameAndType(method_ref->name_and_type_index);
+
+    std::cout << "Call " + method_str.first + " " + method_str.second + " at class " + class_name << std::endl;
+
+    methodCall(method_str.first, method_str.second, ACC_STATIC);
+}
+
+void jjvm::opgetstatic() {
+	uint16_t i = m_frames.top().code->code[m_frames.top().pc++] << 8;
+	i |= m_frames.top().code->code[m_frames.top().pc++];
+
+    std::cout << "WARNING: opgetstatic ignored with i = " + std::to_string(i) << std::endl;
+}
+
+void jjvm::opinvokevirtual() {
+	uint16_t i = m_frames.top().code->code[m_frames.top().pc++] << 8;
+	i |= m_frames.top().code->code[m_frames.top().pc++];
+
+    auto&& method_ref = std::static_pointer_cast<CONSTANT_Methodref_info>(m_class.cp[i]);
+    auto&& class_name = m_class.getClassName(method_ref->class_index);
+    auto&& method_str = m_class.getNameAndType(method_ref->name_and_type_index);
+
+    std::cout << "Virtual Call " + method_str.first + " " + method_str.second + " at class " + class_name << std::endl;
+    
+    if(class_name == "java/io/PrintStream") {
+        if(method_str.first == "println") {
+            println(method_str.second);
+            return;
+        }
+    }
+
+    throw std::runtime_error("Can't resolve virtual call!");
+}
+
+void jjvm::println(const std::string &descriptor) {
+    Value val = m_frames.top().stackTop();
+    m_frames.top().stackPop();
+
+    if (descriptor == "(Ljava/lang/String;)V") {
+        std::cout << "WARNING: can't printl string" << std::endl;
+    }
+	else if (descriptor == "(B)V") {
+        std::cout << val.i << std::endl;
+    }
+	else if (descriptor == "(C)V") {
+        std::cout << val.i << std::endl;
+    }
+	else if (descriptor == "(D)V") {
+        std::cout << val.d << std::endl;
+    }
+	else if (descriptor == "(F)V") {
+        std::cout << val.f << std::endl;
+    }
+	else if (descriptor == "(I)V") {
+        std::cout << val.i << std::endl;
+    }
+	else if (descriptor == "(J)V") {
+        std::cout << val.l << std::endl;
+    }
+	else if (descriptor == "(S)V") {
+        std::cout << val.i << std::endl;
+    }
+	else if (descriptor == "(Z)V") {
+        std::cout << val.i << std::endl;
+    }
+}
+
 
 void jjvm::intiHandlers() {
     m_handlers[NOP]             = std::bind(&jjvm::opnop, this);
@@ -1343,13 +1419,13 @@ void jjvm::intiHandlers() {
     m_handlers[DRETURN]         = std::bind(&jjvm::opireturn, this);
     m_handlers[ARETURN]         = std::bind(&jjvm::opireturn, this);
     m_handlers[RETURN]          = std::bind(&jjvm::opreturn, this);
-    //m_handlers[GETSTATIC]       = std::bind(&jjvm::opgetstatic, this);//TODO
+    m_handlers[GETSTATIC]       = std::bind(&jjvm::opgetstatic, this);
     //m_handlers[PUTSTATIC]       = std::bind(&jjvm::opputstatic, this);
     m_handlers[GETFIELD]        = std::bind(&jjvm::opnop, this);
     m_handlers[PUTFIELD]        = std::bind(&jjvm::opnop, this);
-    //m_handlers[INVOKEVIRTUAL]   = std::bind(&jjvm::opinvokevirtual, this);//TODO
+    m_handlers[INVOKEVIRTUAL]   = std::bind(&jjvm::opinvokevirtual, this);
     m_handlers[INVOKESPECIAL]   = std::bind(&jjvm::opnop, this);
-    //m_handlers[INVOKESTATIC]    = std::bind(&jjvm::opinvokestatic, this);//TODO
+    m_handlers[INVOKESTATIC]    = std::bind(&jjvm::opinvokestatic, this);
     m_handlers[INVOKEINTERFACE] = std::bind(&jjvm::opnop, this);
     m_handlers[INVOKEDYNAMIC]   = std::bind(&jjvm::opnop, this);
     m_handlers[NEW]             = std::bind(&jjvm::opnop, this);

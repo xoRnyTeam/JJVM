@@ -184,6 +184,15 @@ private:
     void opireturn();
     void oparraylength();
     void opnewarray();
+    void opinvokestatic();
+    
+    void opgetstatic(); // IGNORED
+
+    // standart functions
+    void opinvokevirtual();
+    //
+    void println(const std::string &descriptor);
+
 
 }; // class jjvm
 

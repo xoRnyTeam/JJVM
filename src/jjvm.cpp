@@ -71,7 +71,7 @@ void jjvm::methodCall(const std::string &name, const std::string &descriptor, in
         // pars descriptor
         //=---------------
         uint16_t localCounter = 0;
-        for(size_t i = 0; i < descriptor.size() && descriptor[i] != ')'; ++i) {
+        for(size_t i = 0; i < descriptor.size() && descriptor[i] != ')'; ) {
             Value v = m_frames.top().stackTop();
             m_frames.top().stackPop();
 
