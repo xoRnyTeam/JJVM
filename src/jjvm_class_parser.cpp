@@ -358,7 +358,7 @@ std::vector<std::shared_ptr<AttributeBase>> read_attributes(std::basic_istream<F
 		uint16_t index = read_reverse<uint16_t>(stream);
 		uint32_t length = read_reverse<uint32_t>(stream);
 
-		auto& utf8_info = std::static_pointer_cast<CONSTANT_Utf8_info>(cp[index]);
+		auto&& utf8_info = std::static_pointer_cast<CONSTANT_Utf8_info>(cp[index]);
 		AttributeTag tag = getattributetag(utf8_info->bytes);
 		switch (tag) {
 		case AttributeTag::ConstantValue: {
