@@ -2,6 +2,8 @@
 #include <jjvm.hpp>
 #include <cstring>
 #include <iostream>
+//
+#include "timer.hpp"
 
 void parse(int argc, char** argv, std::string& s) {
     if (argc == 1) {
@@ -26,7 +28,9 @@ int main(int argc, char** argv) {
     parse(argc, argv, name);
     vm::jjvm jjvm(name, {"./tests/", "../tests/", "../../tests/"});
 
+    timer::Timer timer{};
     jjvm.execute();
+    std::cout << timer.elapsed<timer::Timer::microsecs>() << " microseconds\n";
 
     std::cout << "END!" << std::endl;
     
