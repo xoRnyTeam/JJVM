@@ -510,34 +510,26 @@ ClassFile ClassFile::create(const std::string &file_name) {
 	ClassFile res = {};
 
     res.minor_version = read_reverse<uint16_t>(fb);
-    std::cout << "Minor version: " <<  res.minor_version << std::endl;
     res.major_version = read_reverse<uint16_t>(fb);
-    std::cout << "Major version: " <<  res.major_version << std::endl;
 
     uint16_t ConstantPool_count = read_reverse<uint16_t>(fb);
-    std::cout << "Constant pools: " <<  ConstantPool_count << std::endl;
     res.cp = read_constant_pools(fb, ConstantPool_count);
 
 	res.access_flags = read_reverse<uint16_t>(fb);
 	res.this_class = read_reverse<uint16_t>(fb);
 	res.super_class = read_reverse<uint16_t>(fb);
-    std::cout << "Super class: " << res.getClassName(res.super_class) << std::endl;
 
 	uint16_t interfaces_count = read_reverse<uint16_t>(fb);
 	res.interfaces = read_interfaces(fb, interfaces_count);
-	std::cout << "Interface count: " << interfaces_count << std::endl;
 
 	uint16_t fields_count = read_reverse<uint16_t>(fb);
 	res.fields = read_fields(fb, fields_count, res.cp);
-	std::cout << "Fields count: " << fields_count << std::endl;
 
 	uint16_t methods_count = read_reverse<uint16_t>(fb);
 	res.methods = read_methods(fb, methods_count, res.cp);
-	std::cout << "Methods count: " << methods_count << std::endl;
 
 	uint16_t attr_count = read_reverse<uint16_t>(fb);
 	res.attributes = read_attributes(fb, attr_count, res.cp);
-	std::cout << "Attributes count: " << attr_count << std::endl;
 
     return res;
 }

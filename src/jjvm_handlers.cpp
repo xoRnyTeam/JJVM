@@ -242,7 +242,6 @@ void jjvm::opdaload() {
     m_frames.top().stackPop();
     v.d = m_heap.load<double>(va.heapID, vi.i);
 
-    std::cout << "daload " << v.d << ", heap " << va.heapID << ", ind " << vi.i << std::endl;
     m_frames.top().stackPush(v);
 }
 
@@ -355,7 +354,6 @@ void jjvm::opdastore() {
     va = m_frames.top().stackTop();
     m_frames.top().stackPop();
 
-    std::cout << "store " << vv.d << ", heap " << va.heapID << ", ind " << vi.i << std::endl;
     m_heap.store<double>(va.heapID, vi.i, vv.d);
 }
 
@@ -623,7 +621,6 @@ void jjvm::opddiv() {
     m_frames.top().stackPop();
 
 	v1.d /= v2.d;
-    std::cout << "ddiv " << v1.d << std::endl;
     m_frames.top().stackPush(v1);
 }
 
@@ -1119,8 +1116,6 @@ void jjvm::opireturn() {
     Value v = m_frames.top().stackTop();
     m_frames.top().stackPop();
 
-    std::cout << "Return: " << v.i << std::endl;
-
     Frame tmp = m_frames.top();
     m_frames.pop();
 
@@ -1174,8 +1169,6 @@ void jjvm::opinvokestatic() {
     auto&& class_name = m_class.getClassName(method_ref->class_index);
     auto&& method_str = m_class.getNameAndType(method_ref->name_and_type_index);
 
-    std::cout << "Call " + method_str.first + " " + method_str.second + " at class " + class_name << std::endl;
-
     methodCall(method_str.first, method_str.second, ACC_STATIC);
 }
 
@@ -1183,7 +1176,7 @@ void jjvm::opgetstatic() {
 	uint16_t i = m_frames.top().code->code[m_frames.top().pc++] << 8;
 	i |= m_frames.top().code->code[m_frames.top().pc++];
 
-    std::cout << "WARNING: opgetstatic ignored with i = " + std::to_string(i) << std::endl;
+    // std::cout << "WARNING: opgetstatic ignored with i = " + std::to_string(i) << std::endl;
 }
 
 void jjvm::opinvokevirtual() {
@@ -1194,8 +1187,6 @@ void jjvm::opinvokevirtual() {
     auto&& class_name = m_class.getClassName(method_ref->class_index);
     auto&& method_str = m_class.getNameAndType(method_ref->name_and_type_index);
 
-    std::cout << "Virtual Call " + method_str.first + " " + method_str.second + " at class " + class_name << std::endl;
-    
     if(class_name == "java/io/PrintStream") {
         if(method_str.first == "println") {
             println(method_str.second);
