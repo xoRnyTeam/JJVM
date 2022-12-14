@@ -56,7 +56,7 @@ public:
 private:
     void methodCall(const std::string &name, const std::string &descriptor, int16_t flags);
 
-    std::shared_ptr<AttributeBase> jjvm::getAttr(std::vector<std::shared_ptr<AttributeBase>> & attrs, AttributeTag tag) const;
+    std::shared_ptr<AttributeBase> getAttr(std::vector<std::shared_ptr<AttributeBase>> & attrs, AttributeTag tag) const;
 
     Value resolveConstant(uint16_t id);
 
