@@ -1230,6 +1230,13 @@ void jjvm::println(const std::string &descriptor) {
     }
 }
 
+void jjvm::opsipush() {
+    uint16_t u = m_frames.top().code->code[m_frames.top().pc++] << 8;
+    u |= m_frames.top().code->code[m_frames.top().pc++];
+    Value v;
+    v.i = (int16_t)u;
+    m_frames.top().stackPush(v);
+}
 
 void jjvm::intiHandlers() {
     m_handlers[NOP]             = std::bind(&jjvm::opnop, this);
@@ -1249,7 +1256,7 @@ void jjvm::intiHandlers() {
     m_handlers[DCONST_0]        = std::bind(&jjvm::opdconst_0, this);
     m_handlers[DCONST_1]        = std::bind(&jjvm::opdconst_1, this);
     m_handlers[BIPUSH]          = std::bind(&jjvm::opbipush, this);
-    //m_handlers[SIPUSH]          = std::bind(&jjvm::opsipush, this);
+    m_handlers[SIPUSH]          = std::bind(&jjvm::opsipush, this);
     m_handlers[LDC]             = std::bind(&jjvm::opldc, this);
     m_handlers[LDC_W]           = std::bind(&jjvm::opldc_w, this);
     m_handlers[LDC2_W]          = std::bind(&jjvm::opldc2_w, this);

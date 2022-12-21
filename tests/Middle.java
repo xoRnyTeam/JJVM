@@ -1,6 +1,10 @@
 public class Middle {
 	public static void main(String[] args) {
-		double[] numbers = {5, 8, 12, -18, -54, 84, -35, 17, 37};
+		double[] numbers = new double[(int)1000L];
+        for(int k = 0; k < numbers.length; k++) {
+            numbers[k] = k;
+        }
+
 		double average = 0;
         if (numbers.length > 0) {
             double sum = 0;

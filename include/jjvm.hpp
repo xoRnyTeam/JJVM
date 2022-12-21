@@ -67,6 +67,7 @@ private:
     void opnop();
     void opaconst_null();
     void opiconst_m1();
+    void opsipush();
     void opiconst_0();
     void opiconst_1();
     void opiconst_2();

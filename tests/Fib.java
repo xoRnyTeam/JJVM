@@ -1,17 +1,10 @@
 public class Fib {
   static int fibonachi(int n) {
-    if (n == 0){
-        return 0;
-    }
-    if (n == 1) {
-        return 1;
-    }
-    else {
-        return fibonachi(n - 1) + fibonachi(n - 2);
-    }
+    if(n < 2) return n;
+    return fibonachi(n - 1) + fibonachi(n - 2);
   }
   public static void main(String[] args) {
-		int reply = fibonachi(10);
+		int reply = fibonachi(30);
 		System.out.println(reply);
 	}
 }
