@@ -3,14 +3,16 @@ import lang.IO;
 public class Benchmark {
 
   public static void foo(int N, int M) {
-    Foo[] foo = new Foo[M];
+    IO.print("Hello foo!\n");
+    Foo[] foo = new Foo[N];
+    IO.print("Hello created foo!\n");
     Foo outer;
 
-    for (int i = 1; i <= N; i++) {
+    for (int i = 1; i <= M; i++) {
       Foo o1 = new Foo(i);
 
       if (i % 3 == 0) {
-        foo[i % M] = o1;
+        foo[i % N] = o1;
       }
 
       Bar o2 = new Bar(i);
@@ -22,17 +24,19 @@ public class Benchmark {
       outer = o1;
     }
 
+    IO.print("Hello start dump!\n");
     // dump 
-    for (int i = 0; i < M; i++) {
-      Foo f = foo[i];
+    for (int i = 0; i < N; i++) {
+      // Foo f = foo[i];
 
-      if (f == null) {
+      if (foo[i] == null) {
         IO.print("Foo:null\n");
       } else {
-        if (f.getY() == null) {
+        if (foo[i].getY() == null) {
           IO.print("Foo.Bar:null\n");
         } else {
-          IO.print(" " + f.getY().a + "\n");
+          IO.print(foo[i].getY().a);
+          IO.print("\n");
         }
       }
     }
@@ -41,8 +45,8 @@ public class Benchmark {
   }
 
   public static void main(String[] args) {
-    int N = 40000;
-    int M = 1000;
+    int N = 10;
+    int M = 10;
     IO.print("Hello!\n");
     foo(N, M);
   }

@@ -1,3 +1,6 @@
+package test;
+import lang.IO;
+
 public class Fib {
   static int fibonachi(int n) {
     if(n < 2) return n;
@@ -5,6 +8,6 @@ public class Fib {
   }
   public static void main(String[] args) {
 		int reply = fibonachi(30);
-		System.out.println(reply);
+		IO.print(reply);
 	}
 }

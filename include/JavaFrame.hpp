@@ -5,9 +5,6 @@
 #include <exception>
 #include <list>
 
-// #include "../gc/Concurrent.hpp"
-
-//
 #include "Internal.hpp"
 #include "Utils.hpp"
 #include "JavaType.hpp"
@@ -18,7 +15,7 @@ struct JType;
 
 class Slots {
     friend class JavaFrame;
-    friend class ConcurrentGC;
+    friend class GC;
     friend class Interpreter;
 
 public:
@@ -54,12 +51,7 @@ public:
     // Dump current frame to stdout
     void dump();
 
-    // Reallocate stack slots size accorrding to argument, this can be used when
-    // an exception occurred
-    void grow(int size);
-
 private:
-    std::list<JType *> exceptions;
     JType **localSlots;
     JType **stackSlots;
     const int maxLocal;

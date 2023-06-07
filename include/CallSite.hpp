@@ -17,8 +17,6 @@ struct CallSite {
     u4 codeLength;
     u2 maxStack;
     u2 maxLocal;
-    u2 exceptionLen;
-    ExceptionTable* exception;
     bool callable;
 };
 

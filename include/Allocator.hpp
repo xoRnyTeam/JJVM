@@ -1,5 +1,5 @@
-#ifndef _JJVM_GC_H
-#define _JJVM_GC_H
+#ifndef _JJVM_ALLOCATOR_H
+#define _JJVM_ALLOCATOR_H
 
 #include <memory>
 #include <unordered_set>
@@ -7,7 +7,6 @@
 #include "Option.hpp"
 #include "RuntimeEnv.hpp"
 
-class GC;
 template <class T>
 struct HeapAllocator {
     typedef T value_type;
@@ -43,4 +42,4 @@ private:
     size_t thresholdVal = 0;
 };
 
-#endif  // _JJVM_GC_H
+#endif  // _JJVM_ALLOCATOR_H

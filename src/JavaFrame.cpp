@@ -46,8 +46,15 @@ Slots::Slots(int maxLocal, int maxStack)
 }
 
 Slots::~Slots() {
+    printf("Slot destructoq!!!\n");
+    // for (size_t i = 0; i < maxStack; ++i)
+    //     if (stackSlots[i])
+    //         delete stackSlots[i];
     delete[] stackSlots;
 
+    // for (size_t i = 0; i < maxLocal; ++i)
+    //     if (localSlots[i])
+    //         delete localSlots[i];
     delete[] localSlots;
 }
 
@@ -65,15 +72,4 @@ void Slots::dump() {
                maxLocal);
         temp = temp->next;
     }
-}
-
-void Slots::grow(int size) {
-    JType** newStack = new JType*[size + maxStack];
-    memset(newStack, 0, sizeof(JType*) * (size + maxStack));
-    for (int i = 0; i < maxStack; i++) {
-        newStack[i] = stackSlots[i];
-    }
-    delete[] stackSlots;
-    this->stackSlots = newStack;
-    this->maxStack = maxStack + size;
 }

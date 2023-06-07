@@ -14,10 +14,6 @@ using namespace std;
 // object creation and array creation
 void JavaHeap::createSuperFields(const JavaClass& javaClass,
                                  const JObject* object) {
-#ifdef PEREYEB_OFF
-    lock_guard<recursive_mutex> lock(objMtx);
-#endif
-
     if (javaClass.raw.superClass != 0) {
         const JavaClass* superClass =
             runtime.cs->findJavaClass(javaClass.getSuperClassName());
@@ -63,10 +59,6 @@ void JavaHeap::createSuperFields(const JavaClass& javaClass,
 // create an object on the heap. This is the only way to create objects in
 // the JJVM
 JObject* JavaHeap::createObject(const JavaClass& javaClass) {
-#ifdef PEREYEB_OFF
-    lock_guard<recursive_mutex> lock(objMtx);
-#endif
-
     JObject* object = new JObject;
     object->jc = &javaClass;
     object->offset = objectContainer.place();
@@ -112,10 +104,6 @@ JObject* JavaHeap::createObject(const JavaClass& javaClass) {
 }
 
 JArray* JavaHeap::createPODArray(int atype, int length) {
-#ifdef PEREYEB_OFF
-    lock_guard<recursive_mutex> lock(arrMtx);
-#endif
-
     JArray* arr = new JArray;
     arr->length = length;
     arr->offset = arrayContainer.place();
@@ -148,25 +136,16 @@ JArray* JavaHeap::createPODArray(int atype, int length) {
 }
 
 JArray* JavaHeap::createObjectArray(const JavaClass& jc, int length) {
-#ifdef PEREYEB_OFF
-    lock_guard<recursive_mutex> lock(arrMtx);
-#endif
-
     JArray* arr = new JArray;
     arr->length = length;
     arr->offset = arrayContainer.place();
 
     JType** items = new JType*[arr->length];
-    FOR_EACH(i, length) { items[i] = createObject(jc); }
     arrayContainer.find(arr->offset) = make_pair(length, items);
     return arr;
 }
 
 JArray* JavaHeap::createCharArray(const string& source, size_t length) {
-#ifdef PEREYEB_OFF
-    lock_guard<recursive_mutex> lock(arrMtx);
-#endif
-
     JArray* arr = new JArray;
     arr->length = length;
     arr->offset = arrayContainer.place();
@@ -191,10 +170,6 @@ JType* JavaHeap::getFieldByNameImpl(const JavaClass* desireLookup,
                                     const string& name,
                                     const string& descriptor, JObject* object,
                                     size_t offset /*= 0*/) {
-#ifdef PEREYEB_OFF
-    lock_guard<recursive_mutex> lock(objMtx);
-#endif
-
     size_t howManyNonStaticFields = 0;
     FOR_EACH(i, currentLookup->raw.fieldsCount) {
         if (!IS_FIELD_STATIC(currentLookup->raw.fields[i].accessFlags)) {
@@ -222,10 +197,6 @@ void JavaHeap::putFieldByNameImpl(const JavaClass* desireLookup,
                                   const string& name, const string& descriptor,
                                   JObject* object, JType* value,
                                   size_t offset /*= 0*/) {
-#ifdef PEREYEB_OFF
-    lock_guard<recursive_mutex> lock(objMtx);
-#endif
-
     size_t howManyNonStaticFields = 0;
     FOR_EACH(i, currentLookup->raw.fieldsCount) {
         if (!IS_FIELD_STATIC(currentLookup->raw.fields[i].accessFlags)) {

@@ -16,7 +16,7 @@ using namespace std;
 
 class Interpreter;
 class JavaClass;
-// class ConcurrentGC;
+class GC;
 
 //--------------------------------------------------------------------------------
 // Class space has responsible to manage all JavaClass objects. A complete
@@ -26,7 +26,7 @@ class JavaClass;
 // JavaClass existed in global class table.
 //--------------------------------------------------------------------------------
 class ClassSpace {
-    //friend class ConcurrentGC;
+    friend class GC;
 
 public:
     ClassSpace(const string& path);

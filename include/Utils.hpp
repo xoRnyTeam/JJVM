@@ -13,14 +13,6 @@
 //--------------------------------------------------------------------------------
 // Force the compiler to inline decorated functions
 //--------------------------------------------------------------------------------
-#ifdef _MSC_VER_
-#define forceinline __forceinline
-#elif (defined __GNUC__) || (defined __clang__)
-#define forceinline __inline__ __attribute__((always_inline))
-#else
-#define forceinline
-#endif
-
 #if (defined __GNUC__) || (defined __clang__)
 #define likely(x) __builtin_expect((x), 1)
 #define unlikely(x) __builtin_expect((x), 0)

@@ -10,6 +10,7 @@ struct JType;
 class JavaFrame;
 class JavaHeap;
 class ClassSpace;
+class GC;
 
 struct RuntimeEnv {
     RuntimeEnv() = default;
@@ -18,9 +19,9 @@ struct RuntimeEnv {
 
     std::unique_ptr<ClassSpace> cs;
     std::unique_ptr<JavaHeap> heap;
+    std::unique_ptr<GC> gc;
     std::unordered_map<std::string, JType* (*)(RuntimeEnv* env, JType**, int)>
         nativeMethods;
 };
-
 extern RuntimeEnv runtime;
 #endif  // !JJVM_YRUNTIME_H

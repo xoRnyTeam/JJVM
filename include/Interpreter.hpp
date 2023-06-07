@@ -5,19 +5,21 @@
 #include <cmath>
 #include <typeinfo>
 
-// #include "JavaException.h"
 #include "ClassFile.hpp"
 #include "JavaFrame.hpp"
 #include "JavaHeap.hpp"
 #include "JavaType.hpp"
 #include "RuntimeEnv.hpp"
 
-// #pragma warning(disable : 4244)
-
 struct MethodInfo;
 struct RuntimeEnv;
+
+class jjvm;
+
 extern RuntimeEnv runtime;
+
 using std::string;
+
 class Interpreter {
 public:
     explicit Interpreter() : frames(new JavaFrame) {}
@@ -40,16 +42,11 @@ private:
     bool checkInstanceof(const JavaClass* jc, u2 index, JType* objectref);
 
     JObject* execNew(const JavaClass* jc, u2 index);
-    JType* execByteCode(const JavaClass* jc, u1* code, u4 codeLength,
-                        u2 exceptLen, ExceptionTable* exceptTab);
+    JType* execByteCode(const JavaClass* jc, u1* code, u4 codeLength);
     JType* execNativeMethod(const string& className, const string& methodName,
                             const string& methodDescriptor);
 
     void loadConstantPoolItem2Stack(const JavaClass* jc, u2 index);
-
-    bool handleException(const JavaClass* jc, u2 exceptLen,
-                         ExceptionTable* exceptTab, const JObject* objectref,
-                         u4& op);
 
     void pushMethodArguments(std::vector<int>& parameter, bool isObjectMethod);
 
@@ -68,7 +65,6 @@ private:
 
 private:
     JavaFrame* frames;
-    // JavaException exception;
 };
 
 template <typename ResultType, typename CallableObjectType>

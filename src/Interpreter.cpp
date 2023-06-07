@@ -8,13 +8,13 @@
 
 #include "AccessFlag.hpp"
 #include "ClassFile.hpp"
-// #include "../misc/Debug.h"
 #include "CallSite.hpp"
 #include "JavaClass.hpp"
 #include "JavaHeap.hpp"
 #include "MethodResolve.hpp"
 #include "Option.hpp"
 #include "SymbolicRef.hpp"
+#include "GC.hpp"
 
 using namespace std;
 
@@ -22,9 +22,6 @@ using namespace std;
     (typeid(*value) != typeid(JDouble) && typeid(*value) != typeid(JLong))
 #define IS_COMPUTATIONAL_TYPE_2(value) \
     (typeid(*value) == typeid(JDouble) || typeid(*value) == typeid(JLong))
-
-// #pragma warning(disable : 4715)
-// #pragma warning(disable : 4244)
 
 Interpreter::~Interpreter() { delete frames; }
 
@@ -41,6 +38,10 @@ JType *Interpreter::execNativeMethod(const string &className,
         return ((*runtime.nativeMethods.find(nativeMethod)).second)(
             &runtime, frames->top()->localSlots, frames->top()->maxLocal);
     }
+
+    runtime.gc->stopTheWorld();
+    runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
+
 #if 0
     GC_SAFE_POINT
     if (runtime.gc->shallGC()) {
@@ -51,44 +52,8 @@ JType *Interpreter::execNativeMethod(const string &className,
 #endif
 }
 
-JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength,
-                                 u2 exceptLen, ExceptionTable *exceptTab) {
+JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
     for (decltype(codeLength) op = 0; op < codeLength; op++) {
-        // If callee propagates a unhandled exception, try to handle  it. When
-        // we can not handle it, propagates it to upper and returns
-
-#if 0
-        if (exception.hasUnhandledException()) {
-            op--;
-            auto *throwobj = frames->top()->pop<JObject>();
-            if (throwobj == nullptr) {
-                throw runtime_error("null pointer");
-            }
-            if (!hasInheritanceRelationship(
-                    throwobj->jc,
-                    runtime.cs->loadClassIfAbsent("java/lang/Throwable"))) {
-                throw runtime_error("it's not a throwable object");
-            }
-
-            if (handleException(jc, exceptLen, exceptTab, throwobj, op)) {
-                while (!frames->top()->emptyStack()) {
-                    frames->top()->pop<JType>();
-                }
-                frames->top()->push(throwobj);
-                exception.sweepException();
-            } else {
-                return throwobj;
-            }
-        }
-
-#endif
-
-#ifdef JJVM_DEBUG_SHOW_BYTECODE
-        for (int i = 0; i < frames.size(); i++) {
-            cout << "-";
-        }
-        Inspector::printOpcode(code, op);
-#endif
         // Interpreting through big switching
         switch (code[op]) {
             case op_nop: {
@@ -1245,6 +1210,7 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength,
                 frames->top()->push(objectref);
             } break;
             case op_newarray: {
+                printf("newarray\n");
                 const u1 atype = code[++op];
                 JInt *count = frames->top()->pop<JInt>();
 
@@ -1258,6 +1224,7 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength,
 
             } break;
             case op_anewarray: {
+                printf("aaaa newarray\n");
                 const u2 index = consumeU2(code, op);
                 auto symbolicRef = parseClassSymbolicReference(jc, index);
                 JInt *count = frames->top()->pop<JInt>();
@@ -1292,18 +1259,6 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength,
                     throw runtime_error("it's not a throwable object");
                 }
 
-#if 0
-                if (handleException(jc, exceptLen, exceptTab, throwobj, op)) {
-                    while (!frames->top()->emptyStack()) {
-                        frames->top()->pop<JType>();
-                    }
-                    frames->top()->push(throwobj);
-                } else /* Exception can not handled within method handlers */ {
-                    exception.markException();
-                    exception.setThrowExceptionInfo(throwobj);
-                    return throwobj;
-                }
-#endif
             } break;
             case op_checkcast: {
                 throw runtime_error("unsupported opcode [checkcast]");
@@ -1321,38 +1276,10 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength,
                 }
             } break;
             case op_monitorenter: {
-#ifndef PEREYEB_OFF
                 throw runtime_error("monitors is not supported!");
-#else
-                JType *ref = frames->top()->pop<JType>();
-
-                if (ref == nullptr) {
-                    throw runtime_error("null pointer");
-                }
-
-                if (!runtime.heap->hasMonitor(ref)) {
-                    dynamic_cast<JObject *>(ref)->offset =
-                        runtime.heap->createMonitor();
-                }
-                runtime.heap->findMonitor(ref)->enter(this_thread::get_id());
-#endif
             } break;
             case op_monitorexit: {
-#ifndef PEREYEB_OFF
                 throw runtime_error("monitors is not supported!");
-#else
-                JType *ref = frames->top()->pop<JType>();
-
-                if (ref == nullptr) {
-                    throw runtime_error("null pointer");
-                }
-                if (!runtime.heap->hasMonitor(ref)) {
-                    dynamic_cast<JObject *>(ref)->offset =
-                        runtime.heap->createMonitor();
-                }
-                runtime.heap->findMonitor(ref)->exit();
-
-#endif
             } break;
             case op_wide: {
                 throw runtime_error("unsupported opcode [wide]");
@@ -1445,34 +1372,6 @@ void Interpreter::loadConstantPoolItem2Stack(const JavaClass *jc, u2 index) {
             "invalid symbolic reference index on constant "
             "pool");
     }
-}
-
-bool Interpreter::handleException(const JavaClass *jc, u2 exceptLen,
-                                  ExceptionTable *exceptTab,
-                                  const JObject *objectref, u4 &op) {
-    FOR_EACH(i, exceptLen) {
-        const string &catchTypeName =
-            jc->getString(dynamic_cast<CONSTANT_Class *>(
-                              jc->raw.constPoolInfo[exceptTab[i].catchType])
-                              ->nameIndex);
-
-        if (hasInheritanceRelationship(
-                runtime.cs->findJavaClass(objectref->jc->getClassName()),
-                runtime.cs->findJavaClass(catchTypeName)) &&
-            exceptTab[i].startPC <= op && op < exceptTab[i].endPC) {
-            // start<=op<end
-            // If we found a proper exception handler, set current pc as
-            // handlerPC of this exception table item;
-            op = exceptTab[i].handlerPC - 1;
-            return true;
-        }
-        if (exceptTab[i].catchType == 0) {
-            op = exceptTab[i].handlerPC - 1;
-            return true;
-        }
-    }
-
-    return false;
 }
 
 JObject *Interpreter::execNew(const JavaClass *jc, u2 index) {
@@ -1652,26 +1551,16 @@ void Interpreter::invokeByName(JavaClass *jc, const string &name,
             cloneValue(execNativeMethod(jc->getClassName(), name, descriptor));
     } else {
         returnValue =
-            cloneValue(execByteCode(jc, csite.code, csite.codeLength,
-                                    csite.exceptionLen, csite.exception));
+            cloneValue(execByteCode(jc, csite.code, csite.codeLength));
     }
     frames->popFrame();
 
-    // Since invokeByName() was merely used to call <clinit> and main method
-    // of running program, therefore, if an exception reached here, we don't
-    // need to push its value into upper frame  again (In fact there is no more
-    // frame), we just print stack trace inforamtion to notice user and
-    // return directly
     if (returnType != T_EXTRA_VOID) {
         frames->top()->push(returnValue);
     }
-#if 0
-    if (exception.hasUnhandledException()) {
-        exception.extendExceptionStackTrace(name);
-        exception.printStackTrace();
-    }
-#endif
 
+    runtime.gc->stopTheWorld();
+    runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
 #if 0
     GC_SAFE_POINT
     if (runtime.gc->shallGC()) {
@@ -1713,23 +1602,16 @@ void Interpreter::invokeInterface(const JavaClass *jc, const string &name,
             execNativeMethod(csite.jc->getClassName(), name, descriptor));
     } else {
         returnValue =
-            cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength,
-                                    csite.exceptionLen, csite.exception));
+            cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength));
     }
     frames->popFrame();
 
     if (returnType != T_EXTRA_VOID) {
         frames->top()->push(returnValue);
     }
-#if 0
-    if (exception.hasUnhandledException()) {
-        frames->top()->grow(1);
-        frames->top()->push(returnValue);
-        if (exception.hasUnhandledException()) {
-            exception.extendExceptionStackTrace(name);
-        }
-    }
-#endif
+    
+    runtime.gc->stopTheWorld();
+    runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
 
 #if 0 
     GC_SAFE_POINT
@@ -1777,8 +1659,7 @@ void Interpreter::invokeVirtual(const string &name, const string &descriptor) {
                 execNativeMethod(csite.jc->getClassName(), name, descriptor));
         } else {
             returnValue =
-                cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength,
-                                        csite.exceptionLen, csite.exception));
+                cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength));
         }
     } else {
         throw runtime_error("can not find method to call");
@@ -1788,15 +1669,9 @@ void Interpreter::invokeVirtual(const string &name, const string &descriptor) {
     if (returnType != T_EXTRA_VOID) {
         frames->top()->push(returnValue);
     }
-#if 0
-    if (exception.hasUnhandledException()) {
-        frames->top()->grow(1);
-        frames->top()->push(returnValue);
-        if (exception.hasUnhandledException()) {
-            exception.extendExceptionStackTrace(name);
-        }
-    }
-#endif
+
+    runtime.gc->stopTheWorld();
+    runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
 
 #if 0
     GC_SAFE_POINT
@@ -1842,22 +1717,16 @@ void Interpreter::invokeSpecial(const JavaClass *jc, const string &name,
             execNativeMethod(csite.jc->getClassName(), name, descriptor));
     } else {
         returnValue =
-            cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength,
-                                    csite.exceptionLen, csite.exception));
+            cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength));
     }
     frames->popFrame();
     if (returnType != T_EXTRA_VOID) {
         frames->top()->push(returnValue);
     }
-#if 0
-    if (exception.hasUnhandledException()) {
-        frames->top()->grow(1);
-        frames->top()->push(returnValue);
-        if (exception.hasUnhandledException()) {
-            exception.extendExceptionStackTrace(name);
-        }
-    }
-#endif
+
+    runtime.gc->stopTheWorld();
+    runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
+
 #if 0
     GC_SAFE_POINT
     if (runtime.gc->shallGC()) {
@@ -1899,8 +1768,7 @@ void Interpreter::invokeStatic(const JavaClass *jc, const string &name,
             execNativeMethod(csite.jc->getClassName(), name, descriptor));
     } else {
         returnValue =
-            cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength,
-                                    csite.exceptionLen, csite.exception));
+            cloneValue(execByteCode(csite.jc, csite.code, csite.codeLength));
     }
     frames->popFrame();
 
@@ -1908,15 +1776,8 @@ void Interpreter::invokeStatic(const JavaClass *jc, const string &name,
         frames->top()->push(returnValue);
     }
 
-#if 0
-    if (exception.hasUnhandledException()) {
-        frames->top()->grow(1);
-        frames->top()->push(returnValue);
-        if (exception.hasUnhandledException()) {
-            exception.extendExceptionStackTrace(name);
-        }
-    }
-#endif
+    // runtime.gc->stopTheWorld();
+    // runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
 
 #if 0
     GC_SAFE_POINT
