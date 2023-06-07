@@ -7,6 +7,8 @@ public class Arr {
 
     foo[0] = new Foo(1);
     foo[1] = new Foo(2);
+    foo[1] = new Foo(foo[0].x + foo[1].x);
+
     IO.print("foo:\n");
     IO.print(foo[1].x);
   }

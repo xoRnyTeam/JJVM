@@ -27,7 +27,7 @@ private:
   void mark(JType *ref);
   void sweep();
   std::unordered_set<size_t> objectBitmap;
-
+  std::unordered_set<JType *> primitiveBitmap;
   std::unordered_set<size_t> arrayBitmap;
   bool overMemoryThreshold = false;
 

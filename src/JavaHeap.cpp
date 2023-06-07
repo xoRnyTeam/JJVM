@@ -59,7 +59,7 @@ void JavaHeap::createSuperFields(const JavaClass& javaClass,
 // create an object on the heap. This is the only way to create objects in
 // the JJVM
 JObject* JavaHeap::createObject(const JavaClass& javaClass) {
-    JObject* object = new JObject;
+    JObject* object = createPrimitive<JObject>();
     object->jc = &javaClass;
     object->offset = objectContainer.place();
     vector<JType*> instanceFields;
@@ -136,22 +136,22 @@ JArray* JavaHeap::createPODArray(int atype, int length) {
 }
 
 JArray* JavaHeap::createObjectArray(const JavaClass& jc, int length) {
-    JArray* arr = new JArray;
+    JArray* arr = createPrimitive<JArray>();
     arr->length = length;
     arr->offset = arrayContainer.place();
 
-    JType** items = new JType*[arr->length];
+    JType** items = new JType*[arr->length]();
     arrayContainer.find(arr->offset) = make_pair(length, items);
     return arr;
 }
 
 JArray* JavaHeap::createCharArray(const string& source, size_t length) {
-    JArray* arr = new JArray;
+    JArray* arr = createPrimitive<JArray>();
     arr->length = length;
     arr->offset = arrayContainer.place();
 
     JType** items = new JType*[arr->length];
-    FOR_EACH(i, length) { items[i] = new JInt(source[i]); }
+    FOR_EACH(i, length) { items[i] = createPrimitive<JInt>(source[i]); }
     arrayContainer.find(arr->offset) = make_pair(length, items);
     return arr;
 }

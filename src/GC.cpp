@@ -6,6 +6,8 @@
 #include "JavaHeap.hpp"
 #include "JavaType.hpp"
 
+#include <iostream>
+
 using namespace std;
 
 void GC::stopTheWorld() { printf("STOP WORLD!\n"); }
@@ -14,9 +16,9 @@ void GC::gc(JavaFrame *frames, GCPolicy policy) {
   printf("GC STARTED!!!!!!!!!!!!\n");
 
   this->frames = frames;
-//   if (!overMemoryThreshold) {
-//     return;
-//   }
+  //   if (!overMemoryThreshold) {
+  //     return;
+  //   }
 
   switch (policy) {
   case GCPolicy::GC_MARK_AND_SWEEP:
@@ -37,56 +39,71 @@ void GC::mark(JType *ref) {
     // could be empty
     return;
   }
+  primitiveBitmap.insert(ref);
   if (typeid(*ref) == typeid(JObject)) {
-    {
-      // Mark() is very quickly and busy, so we use lightweight spin lock
-      // instead of stl mutex
-      objectBitmap.insert(dynamic_cast<JObject *>(ref)->offset);
-    }
+    objectBitmap.insert(dynamic_cast<JObject *>(ref)->offset);
+
     auto fields = runtime.heap->getFields(dynamic_cast<JObject *>(ref));
     for (size_t i = 0; i < fields.size(); i++) {
       mark(fields[i]);
     }
   } else if (typeid(*ref) == typeid(JArray)) {
-    { arrayBitmap.insert(dynamic_cast<JArray *>(ref)->offset); }
-    auto items = runtime.heap->getElements(dynamic_cast<JArray *>(ref));
+    arrayBitmap.insert(dynamic_cast<JArray *>(ref)->offset);
 
+    auto items = runtime.heap->getElements(dynamic_cast<JArray *>(ref));
     for (size_t i = 0; i < items.first; i++) {
       mark(items.second[i]);
     }
   } else {
-    SHOULD_NOT_REACH_HERE
   }
 }
 
 void GC::sweep() {
   // object
+  std::vector<size_t> ToDelete;
   for (auto pos = runtime.heap->objectContainer.data.begin();
        pos != runtime.heap->objectContainer.data.end();) {
-    // If we can not find active object in object bitmap then clear it
-    // Notice that here we don't need to lock objectBitmap since it must
-    // be marked before sweeping
     if (objectBitmap.find(pos->first) == objectBitmap.cend()) {
-      runtime.heap->objectContainer.data.erase(pos++);
-    } else {
-      ++pos;
+      ToDelete.push_back(pos->first);
     }
+    ++pos;
   }
+
+  for (auto &&Id : ToDelete) {
+    runtime.heap->objectContainer.data.erase(Id);
+  }
+  ToDelete.clear();
 
   // array
   for (auto pos = runtime.heap->arrayContainer.data.begin();
        pos != runtime.heap->arrayContainer.data.end();) {
     // DITTO
     if (arrayBitmap.find(pos->first) == arrayBitmap.cend()) {
-      for (size_t i = 0; i < pos->second.first; i++) {
-        delete pos->second.second[i];
-      }
       delete[] pos->second.second;
-      runtime.heap->arrayContainer.data.erase(pos++);
-    } else {
-      ++pos;
+      ToDelete.push_back(pos->first);
     }
+    ++pos;
   }
+  for (auto &&Id : ToDelete) {
+    runtime.heap->arrayContainer.data.erase(Id);
+  }
+  ToDelete.clear();
+
+  // primitive
+  for (auto pos = runtime.heap->primitiveContainer.data.begin();
+       pos != runtime.heap->primitiveContainer.data.end();) {
+    if (primitiveBitmap.find(pos->second) == primitiveBitmap.cend()) {
+      std::cout << "DELETE PRIM: " << pos->second << std::endl;
+      delete pos->second;
+      ToDelete.push_back(pos->first);
+    }
+    ++pos;
+  }
+
+  for (auto &&Id : ToDelete) {
+    runtime.heap->primitiveContainer.data.erase(Id);
+  }
+  ToDelete.clear();
 }
 
 void GC::markAndSweep() {

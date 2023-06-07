@@ -63,54 +63,54 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                 frames->top()->push(nullptr);
             } break;
             case op_iconst_m1: {
-                frames->top()->push(new JInt(-1));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(-1));
             } break;
             case op_iconst_0: {
-                frames->top()->push(new JInt(0));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(0));
             } break;
             case op_iconst_1: {
-                frames->top()->push(new JInt(1));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(1));
             } break;
             case op_iconst_2: {
-                frames->top()->push(new JInt(2));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(2));
             } break;
             case op_iconst_3: {
-                frames->top()->push(new JInt(3));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(3));
             } break;
             case op_iconst_4: {
-                frames->top()->push(new JInt(4));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(4));
             } break;
             case op_iconst_5: {
-                frames->top()->push(new JInt(5));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(5));
             } break;
             case op_lconst_0: {
-                frames->top()->push(new JLong(0));
+                frames->top()->push(runtime.heap->createPrimitive<JLong>(0));
             } break;
             case op_lconst_1: {
-                frames->top()->push(new JLong(1));
+                frames->top()->push(runtime.heap->createPrimitive<JLong>(1));
             } break;
             case op_fconst_0: {
-                frames->top()->push(new JFloat(0.0f));
+                frames->top()->push(runtime.heap->createPrimitive<JFloat>(0.0f));
             } break;
             case op_fconst_1: {
-                frames->top()->push(new JFloat(1.0f));
+                frames->top()->push(runtime.heap->createPrimitive<JFloat>(1.0f));
             } break;
             case op_fconst_2: {
-                frames->top()->push(new JFloat(2.0f));
+                frames->top()->push(runtime.heap->createPrimitive<JFloat>(2.0f));
             } break;
             case op_dconst_0: {
-                frames->top()->push(new JDouble(0.0));
+                frames->top()->push(runtime.heap->createPrimitive<JDouble>(0.0));
             } break;
             case op_dconst_1: {
-                frames->top()->push(new JDouble(1.0));
+                frames->top()->push(runtime.heap->createPrimitive<JDouble>(1.0));
             } break;
             case op_bipush: {
                 const u1 byte = consumeU1(code, op);
-                frames->top()->push(new JInt(byte));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(byte));
             } break;
             case op_sipush: {
                 const u2 byte = consumeU2(code, op);
-                frames->top()->push(new JInt(byte));
+                frames->top()->push(runtime.heap->createPrimitive<JInt>(byte));
             } break;
             case op_ldc: {
                 const u1 index = consumeU1(code, op);
@@ -127,7 +127,7 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                     auto val = dynamic_cast<CONSTANT_Double *>(
                                    jc->raw.constPoolInfo[index])
                                    ->val;
-                    JDouble *dval = new JDouble;
+                    JDouble *dval = runtime.heap->createPrimitive<JDouble>();
                     dval->val = val;
                     frames->top()->push(dval);
                 } else if (typeid(*jc->raw.constPoolInfo[index]) ==
@@ -135,7 +135,7 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                     auto val = dynamic_cast<CONSTANT_Long *>(
                                    jc->raw.constPoolInfo[index])
                                    ->val;
-                    JLong *lval = new JLong;
+                    JLong *lval = runtime.heap->createPrimitive<JLong>();
                     lval->val = val;
                     frames->top()->push(lval);
                 } else {
@@ -806,14 +806,14 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
             case op_i2c:
             case op_i2b: {
                 auto *value = frames->top()->pop<JInt>();
-                auto *result = new JInt;
+                auto *result = runtime.heap->createPrimitive<JInt>();
                 result->val = (int8_t)(value->val);
                 frames->top()->push(result);
 
             } break;
             case op_i2s: {
                 auto *value = frames->top()->pop<JInt>();
-                auto *result = new JInt;
+                auto *result = runtime.heap->createPrimitive<JInt>();
                 result->val = (int16_t)(value->val);
                 frames->top()->push(result);
 
@@ -822,13 +822,13 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                 auto *value2 = frames->top()->pop<JLong>();
                 auto *value1 = frames->top()->pop<JLong>();
                 if (value1->val > value2->val) {
-                    auto *result = new JInt(1);
+                    auto *result = runtime.heap->createPrimitive<JInt>(1);
                     frames->top()->push(result);
                 } else if (value1->val == value2->val) {
-                    auto *result = new JInt(0);
+                    auto *result = runtime.heap->createPrimitive<JInt>(0);
                     frames->top()->push(result);
                 } else {
-                    auto *result = new JInt(-1);
+                    auto *result = runtime.heap->createPrimitive<JInt>(-1);
                     frames->top()->push(result);
                 }
 
@@ -838,13 +838,13 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                 auto *value2 = frames->top()->pop<JFloat>();
                 auto *value1 = frames->top()->pop<JFloat>();
                 if (value1->val > value2->val) {
-                    auto *result = new JInt(1);
+                    auto *result = runtime.heap->createPrimitive<JInt>(1);
                     frames->top()->push(result);
                 } else if (abs(value1->val - value2->val) < 0.000001) {
-                    auto *result = new JInt(0);
+                    auto *result = runtime.heap->createPrimitive<JInt>(0);
                     frames->top()->push(result);
                 } else {
-                    auto *result = new JInt(-1);
+                    auto *result = runtime.heap->createPrimitive<JInt>(-1);
                     frames->top()->push(result);
                 }
 
@@ -854,13 +854,13 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                 auto *value2 = frames->top()->pop<JDouble>();
                 auto *value1 = frames->top()->pop<JDouble>();
                 if (value1->val > value2->val) {
-                    auto *result = new JInt(1);
+                    auto *result = runtime.heap->createPrimitive<JInt>(1);
                     frames->top()->push(result);
                 } else if (abs(value1->val - value2->val) < 0.000000000001) {
-                    auto *result = new JInt(0);
+                    auto *result = runtime.heap->createPrimitive<JInt>(0);
                     frames->top()->push(result);
                 } else {
-                    auto *result = new JInt(-1);
+                    auto *result = runtime.heap->createPrimitive<JInt>(-1);
                     frames->top()->push(result);
                 }
 
@@ -1243,7 +1243,7 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                 if (arrayref == nullptr) {
                     throw runtime_error("null pointer\n");
                 }
-                JInt *length = new JInt;
+                JInt *length = runtime.heap->createPrimitive<JInt>();
                 length->val = arrayref->length;
                 frames->top()->push(length);
 
@@ -1267,12 +1267,12 @@ JType *Interpreter::execByteCode(const JavaClass *jc, u1 *code, u4 codeLength) {
                 const u2 index = consumeU2(code, op);
                 auto *objectref = frames->top()->pop<JObject>();
                 if (objectref == nullptr) {
-                    frames->top()->push(new JInt(0));
+                    frames->top()->push(runtime.heap->createPrimitive<JInt>(0));
                 }
                 if (checkInstanceof(jc, index, objectref)) {
-                    frames->top()->push(new JInt(1));
+                    frames->top()->push(runtime.heap->createPrimitive<JInt>(1));
                 } else {
-                    frames->top()->push(new JInt(0));
+                    frames->top()->push(runtime.heap->createPrimitive<JInt>(0));
                 }
             } break;
             case op_monitorenter: {
@@ -1335,14 +1335,14 @@ void Interpreter::loadConstantPoolItem2Stack(const JavaClass *jc, u2 index) {
     if (typeid(*jc->raw.constPoolInfo[index]) == typeid(CONSTANT_Integer)) {
         auto val =
             dynamic_cast<CONSTANT_Integer *>(jc->raw.constPoolInfo[index])->val;
-        JInt *ival = new JInt;
+        JInt *ival = runtime.heap->createPrimitive<JInt>();
         ival->val = val;
         frames->top()->push(ival);
     } else if (typeid(*jc->raw.constPoolInfo[index]) ==
                typeid(CONSTANT_Float)) {
         auto val =
             dynamic_cast<CONSTANT_Float *>(jc->raw.constPoolInfo[index])->val;
-        JFloat *fval = new JFloat;
+        JFloat *fval = runtime.heap->createPrimitive<JFloat>();
         fval->val = val;
         frames->top()->push(fval);
     } else if (typeid(*jc->raw.constPoolInfo[index]) ==
@@ -1776,8 +1776,8 @@ void Interpreter::invokeStatic(const JavaClass *jc, const string &name,
         frames->top()->push(returnValue);
     }
 
-    // runtime.gc->stopTheWorld();
-    // runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
+    runtime.gc->stopTheWorld();
+    runtime.gc->gc(frames, GCPolicy::GC_MARK_AND_SWEEP);
 
 #if 0
     GC_SAFE_POINT

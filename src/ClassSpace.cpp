@@ -57,8 +57,6 @@ bool ClassSpace::loadJavaClass(const string& jcName) {
 }
 
 void ClassSpace::linkJavaClass(const string& jcName) {
-    // lock_guard<recursive_mutex> lockMA(maMutex);
-
     JavaClass* javaClass = findJavaClass(jcName);
     assert(javaClass != NULL && "sanity check");
     FOR_EACH(fieldOffset, javaClass->raw.fieldsCount) {
@@ -85,8 +83,6 @@ void ClassSpace::linkJavaClass(const string& jcName) {
                                     ->stringIndex);
                             size_t strLen = constantStr.length();
 
-                            fieldObject = runtime.heap->createObject(
-                                *loadClassIfAbsent("java/lang/String"));
                             fieldObject = runtime.heap->createObject(
                                 *loadClassIfAbsent("java/lang/String"));
                             runtime.heap->putFieldByOffset(

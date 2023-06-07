@@ -8,6 +8,7 @@
 #include "Internal.hpp"
 #include "Utils.hpp"
 #include "JavaType.hpp"
+#include "JavaHeap.hpp"
 
 using namespace std;
 
@@ -92,7 +93,7 @@ private:
 
 template <typename LoadType>
 inline void Slots::load(u1 localIndex) {
-    auto *var = new LoadType;
+    auto *var = runtime.heap->createPrimitive<LoadType>();
     var->val = dynamic_cast<LoadType *>(localSlots[localIndex])->val;
     stackSlots[stackTop++] = var;
 }
@@ -101,13 +102,13 @@ template <>
 inline void Slots::load<JRef>(u1 localIndex) {
     JType *var{};
     if (typeid(*localSlots[localIndex]) == typeid(JObject)) {
-        var = new JObject;
+        var = runtime.heap->createPrimitive<JObject>();
         dynamic_cast<JObject *>(var)->jc =
             dynamic_cast<JObject *>(localSlots[localIndex])->jc;
         dynamic_cast<JObject *>(var)->offset =
             dynamic_cast<JObject *>(localSlots[localIndex])->offset;
     } else if (typeid(*localSlots[localIndex]) == typeid(JArray)) {
-        var = new JArray;
+        var = runtime.heap->createPrimitive<JArray>();
         dynamic_cast<JArray *>(var)->length =
             dynamic_cast<JArray *>(localSlots[localIndex])->length;
         dynamic_cast<JArray *>(var)->offset =

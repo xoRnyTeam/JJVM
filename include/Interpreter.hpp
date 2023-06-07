@@ -71,7 +71,7 @@ template <typename ResultType, typename CallableObjectType>
 void Interpreter::binaryArithmetic(CallableObjectType op) {
     auto* value2 = frames->top()->pop<ResultType>();
     auto* value1 = frames->top()->pop<ResultType>();
-    auto* result = new ResultType;
+    auto* result = runtime.heap->createPrimitive<ResultType>();
     result->val = op(value1->val, value2->val);
     frames->top()->push(result);
 }
@@ -86,7 +86,7 @@ void Interpreter::unaryArithmetic(CallableObjectType op) {
 template <typename Type1, typename Type2>
 void Interpreter::typeCast() const {
     auto* value = frames->top()->pop<Type1>();
-    auto* result = new Type2;
+    auto* result = runtime.heap->createPrimitive<Type2>();
     result->val = value->val;
     frames->top()->push(result);
 }
@@ -95,7 +95,7 @@ template <typename ResultType>
 void Interpreter::fmodArithmetic() const {
     auto* value2 = frames->top()->pop<ResultType>();
     auto* value1 = frames->top()->pop<ResultType>();
-    auto* result = new ResultType;
+    auto* result = runtime.heap->createPrimitive<ResultType>();
     result->val = std::fmod(value1->val, value2->val);
     frames->top()->push(result);
 }

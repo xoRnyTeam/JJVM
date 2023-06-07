@@ -9,7 +9,7 @@
 class JavaClass;
 
 struct JType {
-    virtual ~JType() = default;  // reserved for polymorphism
+    virtual ~JType() {};  // reserved for polymorphism
 };
 
 using JRef = JType;
