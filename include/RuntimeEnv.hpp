@@ -4,6 +4,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 struct JType;
 class JavaFrame;
@@ -11,11 +12,12 @@ class JavaHeap;
 class ClassSpace;
 
 struct RuntimeEnv {
-    RuntimeEnv();
-    ~RuntimeEnv();
+    RuntimeEnv() = default;
 
-    ClassSpace* cs;
-    JavaHeap* heap;
+    void Init(const std::string &lib_path);
+
+    std::unique_ptr<ClassSpace> cs;
+    std::unique_ptr<JavaHeap> heap;
     std::unordered_map<std::string, JType* (*)(RuntimeEnv* env, JType**, int)>
         nativeMethods;
 };

@@ -13,36 +13,42 @@
 
 namespace vm {
 
-jjvm::jjvm(const std::string& class_name,
-           const std::vector<std::string>& class_path) {
-    std::ifstream fIn;
-    std::string finded_name;
-    for (const auto& path : class_path) {
-        finded_name = path + '/' + class_name;
-        fIn.open(finded_name);
-        if (fIn.is_open()) {
-            break;
-        }
-    }
+// registered java native methods table, it conforms to following rule:
+// {class_name,method_name,descriptor_name,function_pointer}
+static const char *((nativeFunctionTable[])[4]) = {
+    // {"ydk/lang/IO", "print", "(Ljava/lang/String;)V",
+    //  reinterpret_cast<char*>(ydk_lang_IO_print_str)},
+    // {"ydk/lang/IO", "print", "(I)V",
+    // reinterpret_cast<char*>(ydk_lang_IO_print_I)},
+    // {"ydk/lang/IO", "print", "(C)V",
+    // reinterpret_cast<char*>(ydk_lang_IO_print_C)},
+};
 
-    if (!fIn.is_open()) {
-        throw std::runtime_error("Cant find class '" + class_name + "'");
-    }
-    fIn.close();
+jjvm::jjvm(const std::string &class_path) {
+  runtime.Init(class_path);
 
-    auto* jc = runtime.cs->loadClassIfAbsent(finded_name);
-    // m_class = ClassFile::create(finded_name);
-
-    // if(!m_class.isTopClass()) {
-    //     throw std::runtime_error("Top class isn't implemented!");
-    // }
-
-    // intiHandlers();
+    std::cout << class_path << std::endl;
+  // register native methods
+  int p = sizeof nativeFunctionTable / sizeof nativeFunctionTable[0];
+  for (int i = 0; i < p; i++) {
+    registerNativeMethod(
+        nativeFunctionTable[i][0], nativeFunctionTable[i][1],
+        nativeFunctionTable[i][2],
+        reinterpret_cast<JType *(*)(RuntimeEnv *, JType **, int)>(
+            const_cast<char *>(nativeFunctionTable[i][3])));
+  }
 }
 
-void jjvm::execute() {
-// init class file
-//=---------------
+void jjvm::execute(const std::string &main_class) {
+  // init class file
+  //=---------------
+  auto *jc = runtime.cs->loadClassIfAbsent(main_class);
+  std::cout << main_class << std::endl;
+  runtime.cs->linkClassIfAbsent(main_class);
+  // For each execution thread, we have a code execution engine
+  Interpreter exec;
+  runtime.cs->initClassIfAbsent(exec, main_class);
+
 #if 0 
     auto&& init_method = m_class.getMethod("<clinit>", "()V");
     if(init_method.second) {
@@ -57,7 +63,7 @@ void jjvm::execute() {
 #endif
 }
 
-void jjvm::methodCall(const std::string& name, const std::string& descriptor,
+void jjvm::methodCall(const std::string &name, const std::string &descriptor,
                       int16_t flags) {
 #if 0
     std::pair<Method, bool> hasMethod = m_class.getMethod(name, descriptor);
@@ -140,22 +146,22 @@ void jjvm::methodCall(const std::string& name, const std::string& descriptor,
 #endif
 }
 
-std::shared_ptr<AttributeBase> jjvm::getAttr(
-    std::vector<std::shared_ptr<AttributeBase>>& attrs,
-    AttributeTag tag) const {
-    std::shared_ptr<AttributeBase> res = nullptr;
-    for (auto&& attr : attrs) {
-        if (attr->getTag() == tag) {
-            res = attr;
-            break;
-        }
+std::shared_ptr<AttributeBase>
+jjvm::getAttr(std::vector<std::shared_ptr<AttributeBase>> &attrs,
+              AttributeTag tag) const {
+  std::shared_ptr<AttributeBase> res = nullptr;
+  for (auto &&attr : attrs) {
+    if (attr->getTag() == tag) {
+      res = attr;
+      break;
     }
-    return res;
+  }
+  return res;
 }
 
 Value jjvm::resolveConstant(uint16_t id) {
-    Value v;
-    v.i = 0;
+  Value v;
+  v.i = 0;
 #if 0
     switch (m_class.cp[id]->getTag()) {
         case ConstantTag::CONSTANT_Integer:
@@ -176,7 +182,7 @@ Value jjvm::resolveConstant(uint16_t id) {
         }
     }
 #endif
-    return v;
+  return v;
 }
 
-}  // namespace vm
+} // namespace vm

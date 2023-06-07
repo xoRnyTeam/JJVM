@@ -40,7 +40,7 @@ enum AccessFlags : int16_t {
 
 class jjvm final {
     // ClassFile         m_class;
-    ClassSpace *cs;
+    // RuntimeEnv runtime;
     Heap              m_heap;
     std::stack<Frame> m_frames;
 
@@ -50,11 +50,11 @@ public:
     /// @brief 
     /// @param class_name 
     /// @param class_path 
-    jjvm(const std::string &class_name, const std::vector<std::string> &class_path);
+    jjvm(const std::string &class_path);
 
 public:
     /// @brief init class
-    void execute();
+    void execute(const std::string &main_class);
 
 private:
     void methodCall(const std::string &name, const std::string &descriptor, int16_t flags);
