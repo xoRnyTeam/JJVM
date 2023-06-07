@@ -1,11 +1,13 @@
 #pragma once
 
+#include <array>
+#include <functional>
+#include <stack>
 #include <string>
 #include <vector>
-#include <stack>
-#include <functional>
-#include <array>
 
+#include "Interpreter.hpp"
+#include "RuntimeEnv.hpp"
 #include "ClassFile.hpp"
 #include "Heap.hpp"
 #include "memory.hpp"
@@ -37,7 +39,8 @@ enum AccessFlags : int16_t {
 };
 
 class jjvm final {
-    ClassFile         m_class;
+    // ClassFile         m_class;
+    ClassSpace *cs;
     Heap              m_heap;
     std::stack<Frame> m_frames;
 

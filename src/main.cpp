@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     vm::jjvm jjvm(name, {"./tests/", "../tests/", "../../tests/"});
 
     timer::Timer timer{};
-    jjvm.execute();
+    // jjvm.execute();
     std::cout << timer.elapsed<timer::Timer::microsecs>() << " microseconds\n";
 
     std::cout << "END!" << std::endl;
